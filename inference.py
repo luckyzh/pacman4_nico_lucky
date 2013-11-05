@@ -132,7 +132,10 @@ class ExactInference(InferenceModule):
     allPossible = util.Counter()
     for p in self.legalPositions:
       trueDistance = util.manhattanDistance(p, pacmanPosition)
-      if emissionModel[trueDistance] > 0: allPossible[p] = emissionModel[trueDistance]*self.beliefs[p]
+      # P(Pos_t|evidence_1:T) = self.beliefs[p]
+      # P(evidence_1:T+1|Pos_T+1) = emissionModel[trueDistance]
+      # Only summing one value since true position of ghost never changes
+      if emissionModel[trueDistance] > 0: allPossible[p] = self.beliefs[p] * emissionModel[trueDistance]
     allPossible.normalize()
     
 
@@ -187,8 +190,15 @@ class ExactInference(InferenceModule):
           will move to from the provided gameState.  The ghost must be placed
           in the gameState with a call to self.setGhostPosition above.
     """
-    
-    "*** YOUR CODE HERE ***"
+
+    allPossible = util.Counter()
+    for oldPos in self.legalPositions:
+      newPosDist = self.getPositionDistribution(self.setGhostPosition(gameState, oldPos))
+      for newPos, probability in newPosDist.items():
+        allPossible[newPos] += probability * self.beliefs[oldPos]
+    allPossible.normalize()
+    self.beliefs = allPossible
+
 
   def getBeliefDistribution(self):
     return self.beliefs
