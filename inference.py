@@ -144,7 +144,7 @@ class ExactInference(InferenceModule):
         if p == self.getJailPosition():
           allPossible[p] = 1.0
         else:
-          allPossible = 0.0
+          allPossible[p] = 0.0
 
     self.beliefs = allPossible
     

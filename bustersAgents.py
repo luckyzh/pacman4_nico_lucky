@@ -6,7 +6,7 @@
 # John DeNero (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # For more info, see http://inst.eecs.berkeley.edu/~cs188/sp09/pacman.html
 
-import util
+import operator, util
 from game import Agent
 from game import Directions
 from keyboardAgents import KeyboardAgent
@@ -107,5 +107,16 @@ class GreedyBustersAgent(BustersAgent):
     livingGhostPositionDistributions = [beliefs for i,beliefs
                                         in enumerate(self.ghostBeliefs)
                                         if livingGhosts[i+1]]
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    ghost_positions = []
+    
+    for ghost_distribution in livingGhostPositionDistributions:
+      ghost_positions.append(max(ghost_distribution, key=ghost_distribution.get))
+      
+    dist_ghost_pos_pair = [(self.distancer.getDistance(pacmanPosition, pos), pos) for pos in ghost_positions]
+    closest_pos = min(dist_ghost_pos_pair, key=operator.itemgetter(0))[1]
+
+    successor_pairs = [(self.distancer.getDistance(closest_pos, Actions.getSuccessor(pacmanPosition, action)), action) for action in legal]
+    best_action = min(successor_pairs, key=operator.itemgetter(0))[1]
+   
+    return best_action
